@@ -1,6 +1,16 @@
-import requests, json
+import requests, json, argparse
 
+def int_type(arg_value):
+    try:
+        return int(arg_value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{arg_value} is not a valid integer")
+        
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t', action='store', dest='temp', default=10, type=int_type, help='int temp value to data filter (def. 10)')
+    args = parser.parse_args()
+    
     api_key = "1cc9ea60b7d041e29b6220436231005"
     city = "Cracow"
     days = 7
@@ -12,8 +22,7 @@ def main():
     data = response.json()
     data = data['forecast']['forecastday']
 
-    temp = 10
-    check_temp = lambda day_data : day_data["day"]["mintemp_c"]<temp
+    check_temp = lambda day_data : day_data["day"]["mintemp_c"] < args.temp
     print_day = lambda day_data : print(f'Data: {day_data["date"]}, TempMin: {day_data["day"]["mintemp_c"]}\u00b0C')
 
     data_filtered = list(filter(check_temp,data))
