@@ -1,0 +1,1 @@
+Rozwi¹zanie 3 zadañ programistycznych z Pythona dotycz¹cych odczytu pogody i zapisu do pliku csv w osobnych branch'ach.
