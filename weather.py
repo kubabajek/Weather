@@ -1,4 +1,4 @@
-import requests, json, argparse
+import requests, json, argparse, csv, os
 
 def int_type(arg_value):
     try:
@@ -6,9 +6,15 @@ def int_type(arg_value):
     except ValueError:
         raise argparse.ArgumentTypeError(f"{arg_value} is not a valid integer")
         
+def is_exist(filename):
+    if os.path.exists(filename+'.csv'):
+        raise argparse.ArgumentTypeError(f"File {filename}.csv already exists")
+    return filename
+        
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', action='store', dest='temp', default=10, type=int_type, help='int temp value to data filter (def. 10)')
+    parser.add_argument('-f', action='store', dest='filename', default='result',type=is_exist, help='csv file name without extension')
     args = parser.parse_args()
     
     api_key = "1cc9ea60b7d041e29b6220436231005"
@@ -23,10 +29,18 @@ def main():
     data = data['forecast']['forecastday']
 
     check_temp = lambda day_data : day_data["day"]["mintemp_c"] < args.temp
-    print_day = lambda day_data : print(f'Data: {day_data["date"]}, TempMin: {day_data["day"]["mintemp_c"]}\u00b0C')
-
+    tidy_data = lambda day_data : [day_data["date"],day_data["day"]["mintemp_c"]]
+    print_tidy = lambda tidy : print(f'Data: {tidy[0]}, TempMin: {tidy[1]}\u00b0C')
+    
     data_filtered = list(filter(check_temp,data))
-    list(map(print_day, data_filtered));
-
+    data_tidied = list(map(tidy_data, data_filtered));
+    
+    with open(args.filename+'.csv', mode='w',newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['data', 'temp'])
+        writer.writerows(data_tidied)
+    
+    list(map(print_tidy, data_tidied))
+    
 if __name__ == "__main__":
     main()
